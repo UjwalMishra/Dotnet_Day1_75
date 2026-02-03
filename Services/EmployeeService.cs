@@ -7,42 +7,83 @@ namespace DotnetBasics.Services
     {
         public List<Employee> GetAll()
         {
-            return EmployeeData.Employees;
+            try
+            {
+                return EmployeeData.Employees;
+            }
+            catch (Exception ex)
+            {
+                throw new ApplicationException("Failed to fetch employees.", ex);
+            }
         }
 
         public Employee? GetById(int id)
         {
-            return EmployeeData.Employees
-                .FirstOrDefault(e => e.Id == id);
+            try
+            {
+                return EmployeeData.Employees
+                    .FirstOrDefault(e => e.Id == id);
+            }
+            catch (Exception ex)
+            {
+                throw new ApplicationException("Failed to fetch employee by id.", ex);
+            }
         }
 
         public List<Employee> GetByDepartment(string department)
         {
-            return EmployeeData.Employees
-                .Where(e => e.Department == department)
-                .ToList();
+            try
+            {
+                return EmployeeData.Employees
+                    .Where(e => e.Department == department)
+                    .ToList();
+            }
+            catch (Exception ex)
+            {
+                throw new ApplicationException("Failed to fetch employees by department.", ex);
+            }
         }
 
         public List<Employee> GetActive(bool isActive)
         {
-            return EmployeeData.Employees
-                .Where(e => e.IsActive == isActive)
-                .ToList();
+            try
+            {
+                return EmployeeData.Employees
+                    .Where(e => e.IsActive == isActive)
+                    .ToList();
+            }
+            catch (Exception ex)
+            {
+                throw new ApplicationException("Failed to fetch active employees.", ex);
+            }
         }
 
         public List<Employee> Search(string name)
         {
-            return EmployeeData.Employees
-                .Where(e => e.Name.ToLower().Contains(name.ToLower()))
-                .ToList();
-        }
-        
-        public Dictionary<string, int> CountByDepartment()
-        {
-            return EmployeeData.Employees
-                .GroupBy(e => e.Department)
-                .ToDictionary(g => g.Key, g => g.Count());
+            try
+            {
+                return EmployeeData.Employees
+                    .Where(e => e.Name.ToLower().Contains(name.ToLower()))
+                    .ToList();
+            }
+            catch (Exception ex)
+            {
+                throw new ApplicationException("Failed to search employees.", ex);
+            }
         }
 
+        public Dictionary<string, int> CountByDepartment()
+        {
+            try
+            {
+                return EmployeeData.Employees
+                    .GroupBy(e => e.Department)
+                    .ToDictionary(g => g.Key, g => g.Count());
+            }
+            catch (Exception ex)
+            {
+                throw new ApplicationException("Failed to count employees by department.", ex);
+            }
+        }
     }
 }
