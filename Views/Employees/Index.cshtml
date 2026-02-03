@@ -1,0 +1,19 @@
+@model List<DotnetBasics.Models.Employee>
+
+<h2>Employee Directory</h2>
+
+<partial name="_SearchForm" />
+
+<table>
+    <tr>
+        <th>Name</th>
+        <th>Department</th>
+        <th>Status</th>
+        <th>Action</th>
+    </tr>
+
+    @foreach (var emp in Model)
+    {
+        <partial name="_EmployeeRow" model="emp" />
+    }
+</table>

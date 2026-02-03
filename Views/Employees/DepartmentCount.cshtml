@@ -1,0 +1,21 @@
+@model Dictionary<string, int>
+
+<h2>Employee Count by Department</h2>
+
+<table border="1" cellpadding="5">
+    <tr>
+        <th>Department</th>
+        <th>Total Employees</th>
+    </tr>
+
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>@item.Key</td>
+            <td>@item.Value</td>
+        </tr>
+    }
+</table>
+
+<br />
+<a href="/Employees">⬅ Back to Employees</a>

@@ -1,0 +1,38 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Employee Directory</title>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+
+<header>
+    <nav>
+        <div class="nav-container">
+            <a href="/Employees" class="nav-brand">Employee Directory</a>
+            <div class="nav-links">
+                <a href="/Employees">All Employees</a>
+                <a href="/Employees/ByDepartment?department=Engineering">Engineering</a>
+                <a href="/Employees/ByDepartment?department=HR">HR</a>
+                <a href="/Employees/ByStatus?isActive=true">Active</a>
+                <a href="/Employees/ByStatus?isActive=false">Inactive</a>
+                <a href="/Employees/DepartmentCount">Count</a>
+            </div>
+        </div>
+    </nav>
+</header>
+
+<main class="container">
+    @RenderBody()
+</main>
+
+<footer>
+    <div class="container">
+        &copy; 2024 - Employee Directory Management
+    </div>
+</footer>
+
+</body>
+</html>

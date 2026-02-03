@@ -1,0 +1,11 @@
+@model DotnetBasics.Models.Employee
+
+<h2>Employee Details</h2>
+
+<p><b>Name:</b> @Model.Name</p>
+<p><b>Department:</b> @Model.Department</p>
+<p><b>Email:</b> @Model.Email</p>
+<p><b>Status:</b> @(Model.IsActive ? "Active" : "Inactive")</p>
+
+<br />
+<a href="/Employees">⬅ Back to list</a>

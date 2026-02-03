@@ -1,0 +1,10 @@
+@model DotnetBasics.Models.Employee
+
+<tr>
+    <td>@Model.Name</td>
+    <td>@Model.Department</td>
+    <td>@(Model.IsActive ? "Active" : "Inactive")</td>
+    <td>
+        <a href="/Employees/Details/@Model.Id">View</a>
+    </td>
+</tr>
