@@ -1,14 +1,19 @@
 @model List<EmployeeManagement.ViewModels.DepartmentCountViewModel>
 
+@{
+    ViewData["Title"] = "Department Wise Count";
+}
 
-<h2>Employee Count by Department</h2>
+<h2>Department Wise Employee Count</h2>
 
-<table >
+<table class="table table-bordered">
+    <thead>
     <tr>
         <th>Department</th>
         <th>Total Employees</th>
     </tr>
-
+    </thead>
+    <tbody>
     @foreach (var item in Model)
     {
         <tr>
@@ -16,7 +21,7 @@
             <td>@item.TotalEmployees</td>
         </tr>
     }
+    </tbody>
 </table>
 
-<br />
-<a href="/Employees">Back to Employees</a>
+<a asp-action="Index" class="btn btn-secondary">Back</a>

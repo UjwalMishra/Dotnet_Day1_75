@@ -1,12 +1,37 @@
-@model EmployeeManagement.Models.Employee
+@model EmployeeManagement.DTO.EmployeeDto
 
+@{
+    ViewData["Title"] = "Employee Details";
+}
 
 <h2>Employee Details</h2>
 
-<p><b>Name:</b> @Model.Name</p>
-<p><b>Department:</b> @Model.Department</p>
-<p><b>Email:</b> @Model.Email</p>
-<p><b>Status:</b> @(Model.IsActive ? "Active" : "Inactive")</p>
+<table class="table table-bordered">
+    <tr>
+        <th>Name</th>
+        <td>@Model.Name</td>
+    </tr>
+    <tr>
+        <th>Department</th>
+        <td>@Model.Department</td>
+    </tr>
+    <tr>
+        <th>Email</th>
+        <td>@Model.Email</td>
+    </tr>
+    <tr>
+        <th>Status</th>
+        <td>
+            @if (Model.IsActive)
+            {
+                <span style="color:green;font-weight:bold;">Active</span>
+            }
+            else
+            {
+                <span style="color:red;font-weight:bold;">Inactive</span>
+            }
+        </td>
+    </tr>
+</table>
 
-<br />
-<a href="/Employees">Back to list</a>
+<a asp-action="Index" class="btn btn-secondary">Back to List</a>

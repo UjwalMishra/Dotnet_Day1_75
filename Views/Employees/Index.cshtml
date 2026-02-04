@@ -1,35 +1,104 @@
 @model EmployeeManagement.ViewModels.EmployeeListViewModel
 
 @{
-    string heading = "Employee Directory";
-    bool showBackButton = false;
-
-    if (!string.IsNullOrEmpty(Model.SearchTerm))
-    {
-        heading = $"Search Results for \"{Model.SearchTerm}\"";
-        showBackButton = true;
-    }
-    else if (Model.SelectedFilter == "Active" || Model.SelectedFilter == "Inactive")
-    {
-        heading = $"Employees - {Model.SelectedFilter}";
-        showBackButton = true;
-    }
-    else if (Model.SelectedFilter != "All" && !string.IsNullOrEmpty(Model.SelectedFilter))
-    {
-        heading = $"Employees - {Model.SelectedFilter} Department";
-        showBackButton = true;
-    }
+    ViewData["Title"] = "Employee Directory";
 }
 
-<h2>@heading</h2>
+<h2>Employee Directory</h2>
 
-<partial name="_SearchAndFilter" />
+<form method="get" asp-action="Index" class="mb-3">
+    <div style="display:flex; gap:12px; align-items:end; flex-wrap:wrap;">
+        
+        <div>
+            <label>Department</label>
+            <select name="department" class="form-control">
+                <option value="">All</option>
+                @foreach (var dept in Model.Departments)
+                {
+                    <option value="@dept"
+                            selected="@(dept == Model.SelectedDepartment)">
+                        @dept
+                    </option>
+                }
+            </select>
+        </div>
+        
+        <div>
+            <label>Status</label>
+            <select name="status" class="form-control">
+                <option value="">All</option>
+                <option value="Active" selected="@(Model.SelectedStatus == "Active")">Active</option>
+                <option value="Inactive" selected="@(Model.SelectedStatus == "Inactive")">Inactive</option>
+            </select>
+        </div>
+        
+        <div>
+            <label>Search</label>
+            <input type="text"
+                   name="search"
+                   value="@Model.SearchTerm"
+                   class="form-control"
+                   placeholder="Search by name" />
+        </div>
+        
+        <div>
+            <button type="submit" class="btn btn-primary">
+                Apply
+            </button>
+            <a asp-action="Index" class="btn btn-primary">
+                Reset
+            </a>
+        </div>
+    </div>
+</form>
 
-<partial name="_EmployeeTable" model="Model.Employees" />
+<p><strong>Total Employees:</strong> @Model.TotalEmployees</p>
 
-@if (showBackButton)
-{
-    <br />
-    <a href="/Employees"> Back to Employees</a>
-}
-
+<table class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Department</th>
+            <th>Email</th>
+            <th>Status</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model.Employees.Any())
+        {
+            foreach (var emp in Model.Employees)
+            {
+                <tr>
+                    <td>@emp.Name</td>
+                    <td>@emp.Department</td>
+                    <td>@emp.Email</td>
+                    <td>
+                        @if (emp.IsActive)
+                        {
+                            <span style="color:green;font-weight:bold;">Active</span>
+                        }
+                        else
+                        {
+                            <span style="color:red;font-weight:bold;">Inactive</span>
+                        }
+                    </td>
+                    <td>
+                        <a asp-action="Details"
+                           asp-route-id="@emp.Id">
+                            View
+                        </a>
+                    </td>
+                </tr>
+            }
+        }
+        else
+        {
+            <tr>
+                <td colspan="5" style="text-align:center;">
+                    No employees found
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

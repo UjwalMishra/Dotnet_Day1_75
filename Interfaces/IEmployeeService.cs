@@ -1,14 +1,21 @@
-using EmployeeManagement.Models;
+using EmployeeManagement.DTO;
+using EmployeeManagement.ViewModels;
 
 namespace EmployeeManagement.Interfaces
 {
     public interface IEmployeeService
     {
-        List<Employee> GetAll();
-        Employee? GetById(int id);
-        List<Employee> GetByDepartment(string department);
-        List<Employee> GetByStatus(bool isActive);
-        List<Employee> Search(string name);
-        Dictionary<string, int> CountByDepartment();
+        List<EmployeeDto> GetEmployees(
+            string department,
+            string status,
+            string search
+        );
+
+        EmployeeDto? GetById(int id);
+        
+        List<DepartmentCountViewModel> GetDepartmentCounts();
+        
+        List<string> GetAllDepartments();
+    
     }
 }

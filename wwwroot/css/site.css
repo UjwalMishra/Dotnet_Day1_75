@@ -26,6 +26,7 @@ header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding: 0px 20px;
 }
 
 .nav-brand {
@@ -78,7 +79,8 @@ input[type="text"] {
   width: 260px;
 }
 
-button {
+button, .btn {
+  text-decoration: none;
   padding: 8px 18px;
   cursor: pointer;
   background-color: #eee;

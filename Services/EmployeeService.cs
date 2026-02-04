@@ -1,51 +1,95 @@
 using EmployeeManagement.Data;
+using EmployeeManagement.DTO;
 using EmployeeManagement.Interfaces;
 using EmployeeManagement.Models;
+using Microsoft.EntityFrameworkCore;
+using EmployeeManagement.ViewModels;
 
 namespace EmployeeManagement.Services
 {
     public class EmployeeService : IEmployeeService
     {
-        public List<Employee> GetAll()
+        private readonly AppDbContext _context;
+
+        public EmployeeService(AppDbContext context)
         {
-            return EmployeeData.Employees;
+            _context = context;
         }
 
-        public Employee? GetById(int id)
+        private static EmployeeDto MapToDto(Employee employee)
         {
-            return EmployeeData.Employees
-                .FirstOrDefault(e => e.Id == id);
+            return new EmployeeDto
+            {
+                Id = employee.Id,
+                Name = employee.Name,
+                Department = employee.Department,
+                Email = employee.Email,
+                IsActive = employee.IsActive
+            };
         }
 
-        public List<Employee> GetByDepartment(string department)
+        public List<EmployeeDto> GetEmployees(
+            string department,
+            string status,
+            string search
+        )
         {
-            return EmployeeData.Employees
-                .Where(e => e.Department.Equals(department, StringComparison.OrdinalIgnoreCase))
+            var query = _context.Employees.AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(department))
+            {
+                query = query.Where(e =>
+                    e.Department.Equals(department));
+            }
+
+            if (!string.IsNullOrWhiteSpace(status))
+            {
+                bool isActive = status == "Active";
+                query = query.Where(e => e.IsActive == isActive);
+            }
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                query = query.Where(e =>
+                    e.Name.Contains(search));
+            }
+
+            return query
+                .AsNoTracking()
+                .Select(MapToDto)
                 .ToList();
         }
 
-        public List<Employee> GetByStatus(bool isActive)
+        public EmployeeDto? GetById(int id)
         {
-            return EmployeeData.Employees
-                .Where(e => e.IsActive == isActive)
-                .ToList();
+            return _context.Employees
+                .AsNoTracking()
+                .Where(e => e.Id == id)
+                .Select(MapToDto)
+                .FirstOrDefault();
         }
-
-        public List<Employee> Search(string name)
+        
+        public List<DepartmentCountViewModel> GetDepartmentCounts()
         {
-            if (string.IsNullOrWhiteSpace(name))
-                return GetAll();
-
-            return EmployeeData.Employees
-                .Where(e => e.Name.Contains(name, StringComparison.OrdinalIgnoreCase))
-                .ToList();
-        }
-
-        public Dictionary<string, int> CountByDepartment()
-        {
-            return EmployeeData.Employees
+            return _context.Employees
+                .AsNoTracking()
                 .GroupBy(e => e.Department)
-                .ToDictionary(g => g.Key, g => g.Count());
+                .Select(g => new DepartmentCountViewModel
+                {
+                    Department = g.Key,
+                    TotalEmployees = g.Count()
+                })
+                .ToList();
         }
+        
+        public List<string> GetAllDepartments()
+        {
+            return _context.Employees
+                .AsNoTracking()
+                .Select(e => e.Department)
+                .Distinct()
+                .ToList();
+        }
+
     }
 }
