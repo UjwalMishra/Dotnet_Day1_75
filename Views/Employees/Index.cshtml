@@ -138,110 +138,248 @@ ViewData["Title"] = "Employee Directory";
     <button onclick="closeEditModal()">Cancel</button>
 </div>
 
+
 <script>
 
-    fetch('/Employees/GetDepartments')
-        .then(res=>res.json())
-        .then(data=>{
-            const dropdown=document.getElementById('departmentDropdown');
-            data.forEach(d=>{
-                const o=document.createElement('option');
-                o.value=d;
-                o.text=d;
-                if(d==='@Model.SelectedDepartment'){o.selected=true;}
-                dropdown.appendChild(o);
-            });
-        });
+    $.ajax({
+        url:'/Employees/GetDepartments',
+        type:'GET',
+        success:function(data){
+
+            var dropdown = document.getElementById("departmentDropdown");
+
+            for(var i=0;i<data.length;i++){
+
+                var opt = document.createElement("option");
+                opt.value = data[i];
+                opt.innerText = data[i];
+
+                if(data[i] == '@Model.SelectedDepartment'){
+                    opt.selected = true;
+                }
+
+                dropdown.appendChild(opt);
+            }
+        }
+    });
+
     function openCreateModal(){
         document.getElementById("createModal").style.display="block";
     }
+
     function closeCreateModal(){
         document.getElementById("createModal").style.display="none";
     }
-    
-    
-    function createEmployee(){
-        const name=document.getElementById("createName").value.trim();
-        const dept=document.getElementById("createDepartment").value.trim();
-        const email=document.getElementById("createEmail").value.trim();
 
-        if(!name || !dept || !email){
+    function createEmployee(){
+
+        var name = document.getElementById("createName").value.trim();
+        var dept = document.getElementById("createDepartment").value.trim();
+        var email = document.getElementById("createEmail").value.trim();
+
+        if(name=="" || dept=="" || email==""){
             alert("All fields required");
             return;
         }
 
-        fetch('/Employees/Create',{
-            method:'POST',
-            headers:{'Content-Type':'application/json'},
-            body:JSON.stringify({
+        $.ajax({
+            url:'/Employees/Create',
+            type:'POST',
+            contentType:'application/json',
+            data:JSON.stringify({
                 name:name,
                 department:dept,
                 email:email,
-                isActive:document.getElementById("createIsActive").value==="true"
-            })
-        }).then(r=>{
-            if(r.ok){location.reload();}
-            else{alert("Error");}
+                isActive: document.getElementById("createIsActive").value=="true"
+            }),
+            success:function(){
+                location.reload();
+            },
+            error:function(){
+                alert("Error");
+            }
         });
     }
 
-    
-    
     function deleteEmployee(id){
+
         if(!confirm("Delete employee?")) return;
 
-        fetch(`/Employees/Delete?id=${id}`,{method:'DELETE'})
-            .then(r=>{
-                if(r.ok){
-                    document.getElementById(`row-${id}`).remove();
-                }else{alert("Delete failed");}
-            });
+        $.ajax({
+            url:'/Employees/Delete?id='+id,
+            type:'DELETE',
+            success:function(){
+                var row = document.getElementById("row-"+id);
+                if(row){ row.remove(); }
+            },
+            error:function(){
+                alert("Delete failed");
+            }
+        });
     }
 
-    
-    
     function openEditModal(id){
-        fetch(`/Employees/GetById?id=${id}`)
-            .then(r=>r.json())
-            .then(d=>{
-                document.getElementById("editId").value=d.id;
-                document.getElementById("editName").value=d.name;
-                document.getElementById("editDepartment").value=d.department;
-                document.getElementById("editEmail").value=d.email;
-                document.getElementById("editIsActive").value=d.isActive.toString();
+
+        $.ajax({
+            url:'/Employees/GetById?id='+id,
+            type:'GET',
+            success:function(d){
+
+                document.getElementById("editId").value = d.id;
+                document.getElementById("editName").value = d.name;
+                document.getElementById("editDepartment").value = d.department;
+                document.getElementById("editEmail").value = d.email;
+                document.getElementById("editIsActive").value = d.isActive.toString();
+
                 document.getElementById("editModal").style.display="block";
-            });
+            }
+        });
     }
 
-    
     function closeEditModal(){
         document.getElementById("editModal").style.display="none";
     }
 
     function updateEmployee(){
-        const name=document.getElementById("editName").value.trim();
-        const dept=document.getElementById("editDepartment").value.trim();
-        const email=document.getElementById("editEmail").value.trim();
 
-        if(!name || !dept || !email){
+        var name = document.getElementById("editName").value.trim();
+        var dept = document.getElementById("editDepartment").value.trim();
+        var email = document.getElementById("editEmail").value.trim();
+
+        if(name=="" || dept=="" || email==""){
             alert("All fields required");
             return;
         }
 
-        fetch('/Employees/Update',{
-            method:'PUT',
-            headers:{'Content-Type':'application/json'},
-            body:JSON.stringify({
-                id:document.getElementById("editId").value,
+        $.ajax({
+            url:'/Employees/Update',
+            type:'PUT',
+            contentType:'application/json',
+            data:JSON.stringify({
+                id: document.getElementById("editId").value,
                 name:name,
                 department:dept,
                 email:email,
-                isActive:document.getElementById("editIsActive").value==="true"
-            })
-        }).then(r=>{
-            if(r.ok){location.reload();}
-            else{alert("Update failed");}
+                isActive: document.getElementById("editIsActive").value=="true"
+            }),
+            success:function(){
+                location.reload();
+            },
+            error:function(){
+                alert("Update failed");
+            }
         });
     }
 
 </script>
+        
+
+
+
+@* <script> *@
+@* *@
+@*     fetch('/Employees/GetDepartments') *@
+@*         .then(res=>res.json()) *@
+@*         .then(data=>{ *@
+@*             const dropdown=document.getElementById('departmentDropdown'); *@
+@*             data.forEach(d=>{ *@
+@*                 const o=document.createElement('option'); *@
+@*                 o.value=d; *@
+@*                 o.text=d; *@
+@*                 if(d==='@Model.SelectedDepartment'){o.selected=true;} *@
+@*                 dropdown.appendChild(o); *@
+@*             }); *@
+@*         }); *@
+@*     function openCreateModal(){ *@
+@*         document.getElementById("createModal").style.display="block"; *@
+@*     } *@
+@*     function closeCreateModal(){ *@
+@*         document.getElementById("createModal").style.display="none"; *@
+@*     } *@
+@*      *@
+@*      *@
+@*     function createEmployee(){ *@
+@*         const name=document.getElementById("createName").value.trim(); *@
+@*         const dept=document.getElementById("createDepartment").value.trim(); *@
+@*         const email=document.getElementById("createEmail").value.trim(); *@
+@* *@
+@*         if(!name || !dept || !email){ *@
+@*             alert("All fields required"); *@
+@*             return; *@
+@*         } *@
+@* *@
+@*         fetch('/Employees/Create',{ *@
+@*             method:'POST', *@
+@*             headers:{'Content-Type':'application/json'}, *@
+@*             body:JSON.stringify({ *@
+@*                 name:name, *@
+@*                 department:dept, *@
+@*                 email:email, *@
+@*                 isActive:document.getElementById("createIsActive").value==="true" *@
+@*             }) *@
+@*         }).then(r=>{ *@
+@*             if(r.ok){location.reload();} *@
+@*             else{alert("Error");} *@
+@*         }); *@
+@*     } *@
+@* *@
+@*      *@
+@*      *@
+@*     function deleteEmployee(id){ *@
+@*         if(!confirm("Delete employee?")) return; *@
+@* *@
+@*         fetch(`/Employees/Delete?id=${id}`,{method:'DELETE'}) *@
+@*             .then(r=>{ *@
+@*                 if(r.ok){ *@
+@*                     document.getElementById(`row-${id}`).remove(); *@
+@*                 }else{alert("Delete failed");} *@
+@*             }); *@
+@*     } *@
+@* *@
+@*      *@
+@*      *@
+@*     function openEditModal(id){ *@
+@*         fetch(`/Employees/GetById?id=${id}`) *@
+@*             .then(r=>r.json()) *@
+@*             .then(d=>{ *@
+@*                 document.getElementById("editId").value=d.id; *@
+@*                 document.getElementById("editName").value=d.name; *@
+@*                 document.getElementById("editDepartment").value=d.department; *@
+@*                 document.getElementById("editEmail").value=d.email; *@
+@*                 document.getElementById("editIsActive").value=d.isActive.toString(); *@
+@*                 document.getElementById("editModal").style.display="block"; *@
+@*             }); *@
+@*     } *@
+@* *@
+@*      *@
+@*     function closeEditModal(){ *@
+@*         document.getElementById("editModal").style.display="none"; *@
+@*     } *@
+@* *@
+@*     function updateEmployee(){ *@
+@*         const name=document.getElementById("editName").value.trim(); *@
+@*         const dept=document.getElementById("editDepartment").value.trim(); *@
+@*         const email=document.getElementById("editEmail").value.trim(); *@
+@* *@
+@*         if(!name || !dept || !email){ *@
+@*             alert("All fields required"); *@
+@*             return; *@
+@*         } *@
+@* *@
+@*         fetch('/Employees/Update',{ *@
+@*             method:'PUT', *@
+@*             headers:{'Content-Type':'application/json'}, *@
+@*             body:JSON.stringify({ *@
+@*                 id:document.getElementById("editId").value, *@
+@*                 name:name, *@
+@*                 department:dept, *@
+@*                 email:email, *@
+@*                 isActive:document.getElementById("editIsActive").value==="true" *@
+@*             }) *@
+@*         }).then(r=>{ *@
+@*             if(r.ok){location.reload();} *@
+@*             else{alert("Update failed");} *@
+@*         }); *@
+@*     } *@
+@* *@
+@* </script> *@

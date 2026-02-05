@@ -15,6 +15,7 @@ namespace EmployeeManagement.Services
             _repository = repository;
         }
 
+        
         private static EmployeeDto MapToDto(Employee employee)
         {
             return new EmployeeDto
@@ -27,11 +28,7 @@ namespace EmployeeManagement.Services
             };
         }
 
-        public async Task<List<EmployeeDto>> GetEmployees(
-            string department,
-            string status,
-            string search
-        )
+        public async Task<List<EmployeeDto>> GetEmployees(string department, string status, string search)
         {
             var employees = await _repository.GetAllEmployee();
             var query = employees.AsQueryable();
@@ -48,6 +45,7 @@ namespace EmployeeManagement.Services
             return query.Select(MapToDto).ToList();
         }
 
+        
         public async Task<EmployeeDto?> GetById(int id)
         {
             var employee = await _repository.GetByIdEmployee(id);
@@ -58,6 +56,8 @@ namespace EmployeeManagement.Services
         {
             return await _repository.GetAllDepartmentsEmployee();
         }
+        
+        
 
         public async Task<List<DepartmentCountViewModel>> GetDepartmentCounts()
         {
@@ -80,7 +80,11 @@ namespace EmployeeManagement.Services
                 Name = val.Name,
                 Department = val.Department,
                 Email = val.Email,
-                IsActive = val.IsActive
+                IsActive = val.IsActive,
+                CreatedAt = DateTime.UtcNow,
+                CreatedBy = "System",
+                UpdatedAt = DateTime.UtcNow,
+                UpdatedBy = "System"
             };
 
             await _repository.AddEmployee(employee);
@@ -89,17 +93,22 @@ namespace EmployeeManagement.Services
         public async Task<bool> UpdateEmployee(UpdateEmployeeDto val)
         {
             var employee = await _repository.GetByIdEmployee(val.Id);
+            
             if (employee == null) return false;
 
             employee.Name = val.Name;
             employee.Department = val.Department;
             employee.Email = val.Email;
             employee.IsActive = val.IsActive;
+            employee.UpdatedAt = DateTime.UtcNow;
+            employee.UpdatedBy = "System";
 
+            
             await _repository.UpdateEmployee(employee);
             return true;
         }
 
+        
         public async Task<bool> DeleteEmployee(int id)
         {
             var employee = await _repository.GetByIdEmployee(id);

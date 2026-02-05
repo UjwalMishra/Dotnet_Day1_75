@@ -13,15 +13,10 @@ namespace EmployeeManagement.Controllers
         {
             _employeeService = employeeService;
         }
-
         
         
         [HttpGet]
-        public async Task<IActionResult> Index(
-            string department = "",
-            string status = "",
-            string search = ""
-        )
+        public async Task<IActionResult> Index(string department = "", string status = "", string search = "")
         {
             var employees = await _employeeService.GetEmployees(department, status, search);
 
@@ -42,8 +37,7 @@ namespace EmployeeManagement.Controllers
         {
             var employee = await _employeeService.GetById(id);
 
-            if (employee == null)
-                return NotFound("Employee not found");
+            if (employee == null) return BadRequest("Employee not found");
 
             return View(employee);
         }
@@ -76,7 +70,8 @@ namespace EmployeeManagement.Controllers
         public async Task<IActionResult> Update([FromBody] UpdateEmployeeDto val)
         {
             var success = await _employeeService.UpdateEmployee(val);
-            if (!success) return BadRequest();
+            if (!success) return  BadRequest("Error while updating the User");
+            
             return Ok();
         }
 
@@ -84,7 +79,8 @@ namespace EmployeeManagement.Controllers
         public async Task<IActionResult> Delete(int id)
         {
             var success = await _employeeService.DeleteEmployee(id);
-            if (!success) return BadRequest();
+            if (!success) return  BadRequest("Error while deleting the User");
+            
             return Ok();
         }
         
@@ -92,7 +88,8 @@ namespace EmployeeManagement.Controllers
         public async Task<IActionResult> GetById(int id)
         {
             var employee = await _employeeService.GetById(id);
-            if (employee == null) return BadRequest();
+            if (employee == null) return  BadRequest("Employee not found");
+            
             return Json(employee);
         }
         
