@@ -1,19 +1,18 @@
-using EmployeeManagement.Data;
 using EmployeeManagement.DTO;
 using EmployeeManagement.Interfaces;
 using EmployeeManagement.Models;
-using Microsoft.EntityFrameworkCore;
+using EmployeeManagement.Repositories;
 using EmployeeManagement.ViewModels;
 
 namespace EmployeeManagement.Services
 {
     public class EmployeeService : IEmployeeService
     {
-        private readonly AppDbContext _context;
+        private readonly IEmployeeRepository _repository;
 
-        public EmployeeService(AppDbContext context)
+        public EmployeeService(IEmployeeRepository repository)
         {
-            _context = context;
+            _repository = repository;
         }
 
         private static EmployeeDto MapToDto(Employee employee)
@@ -28,51 +27,43 @@ namespace EmployeeManagement.Services
             };
         }
 
-        public List<EmployeeDto> GetEmployees(
+        public async Task<List<EmployeeDto>> GetEmployees(
             string department,
             string status,
             string search
         )
         {
-            var query = _context.Employees.AsQueryable();
+            var employees = await _repository.GetAllEmployee();
+            var query = employees.AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(department))
-            {
-                query = query.Where(e =>
-                    e.Department.Equals(department));
-            }
+                query = query.Where(e => e.Department == department);
 
             if (!string.IsNullOrWhiteSpace(status))
-            {
-                bool isActive = status == "Active";
-                query = query.Where(e => e.IsActive == isActive);
-            }
+                query = query.Where(e => e.IsActive == (status == "Active"));
 
             if (!string.IsNullOrWhiteSpace(search))
-            {
-                query = query.Where(e =>
-                    e.Name.Contains(search));
-            }
+                query = query.Where(e => e.Name.Contains(search));
 
-            return query
-                .AsNoTracking()
-                .Select(MapToDto)
-                .ToList();
+            return query.Select(MapToDto).ToList();
         }
 
-        public EmployeeDto? GetById(int id)
+        public async Task<EmployeeDto?> GetById(int id)
         {
-            return _context.Employees
-                .AsNoTracking()
-                .Where(e => e.Id == id)
-                .Select(MapToDto)
-                .FirstOrDefault();
+            var employee = await _repository.GetByIdEmployee(id);
+            return employee == null ? null : MapToDto(employee);
         }
-        
-        public List<DepartmentCountViewModel> GetDepartmentCounts()
+
+        public async Task<List<string>> GetAllDepartments()
         {
-            return _context.Employees
-                .AsNoTracking()
+            return await _repository.GetAllDepartmentsEmployee();
+        }
+
+        public async Task<List<DepartmentCountViewModel>> GetDepartmentCounts()
+        {
+            var employees = await _repository.GetAllEmployee();
+
+            return employees
                 .GroupBy(e => e.Department)
                 .Select(g => new DepartmentCountViewModel
                 {
@@ -82,13 +73,40 @@ namespace EmployeeManagement.Services
                 .ToList();
         }
         
-        public List<string> GetAllDepartments()
+        public async Task CreateEmployee(CreateEmployeeDto val)
         {
-            return _context.Employees
-                .AsNoTracking()
-                .Select(e => e.Department)
-                .Distinct()
-                .ToList();
+            var employee = new Employee
+            {
+                Name = val.Name,
+                Department = val.Department,
+                Email = val.Email,
+                IsActive = val.IsActive
+            };
+
+            await _repository.AddEmployee(employee);
+        }
+
+        public async Task<bool> UpdateEmployee(UpdateEmployeeDto val)
+        {
+            var employee = await _repository.GetByIdEmployee(val.Id);
+            if (employee == null) return false;
+
+            employee.Name = val.Name;
+            employee.Department = val.Department;
+            employee.Email = val.Email;
+            employee.IsActive = val.IsActive;
+
+            await _repository.UpdateEmployee(employee);
+            return true;
+        }
+
+        public async Task<bool> DeleteEmployee(int id)
+        {
+            var employee = await _repository.GetByIdEmployee(id);
+            if (employee == null) return false;
+
+            await _repository.DeleteEmployee(employee);
+            return true;
         }
 
     }

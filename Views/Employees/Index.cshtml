@@ -1,104 +1,247 @@
 @model EmployeeManagement.ViewModels.EmployeeListViewModel
 
 @{
-    ViewData["Title"] = "Employee Directory";
+ViewData["Title"] = "Employee Directory";
 }
 
 <h2>Employee Directory</h2>
 
-<form method="get" asp-action="Index" class="mb-3">
+
+
+<button onclick="openCreateModal()">Add Employee</button>
+
+<div id="createModal" style="display:none; border:1px solid #ccc; padding:20px; background:#f9f9f9;">
+    <h3>Add Employee</h3>
+
+    <input type="text" id="createName" placeholder="Name" required />
+    <input type="text" id="createDepartment" placeholder="Department" required />
+    <input type="email" id="createEmail" placeholder="Email" required />
+
+    <select id="createIsActive">
+        <option value="true">Active</option>
+        <option value="false">Inactive</option>
+    </select>
+
+    <br /><br />
+
+    <button onclick="createEmployee()">Add</button>
+    <button onclick="closeCreateModal()">Cancel</button>
+</div>
+
+<hr />
+
+
+
+
+<form method="get" asp-action="Index">
     <div style="display:flex; gap:12px; align-items:end; flex-wrap:wrap;">
-        
+
         <div>
             <label>Department</label>
-            <select name="department" class="form-control">
+            <select id="departmentDropdown" name="department">
                 <option value="">All</option>
-                @foreach (var dept in Model.Departments)
-                {
-                    <option value="@dept"
-                            selected="@(dept == Model.SelectedDepartment)">
-                        @dept
-                    </option>
-                }
             </select>
         </div>
-        
+
         <div>
             <label>Status</label>
-            <select name="status" class="form-control">
+            <select name="status">
                 <option value="">All</option>
-                <option value="Active" selected="@(Model.SelectedStatus == "Active")">Active</option>
-                <option value="Inactive" selected="@(Model.SelectedStatus == "Inactive")">Inactive</option>
+                <option value="Active" selected="@(Model.SelectedStatus=="Active")">Active</option>
+                <option value="Inactive" selected="@(Model.SelectedStatus=="Inactive")">Inactive</option>
             </select>
         </div>
-        
+
         <div>
             <label>Search</label>
-            <input type="text"
-                   name="search"
-                   value="@Model.SearchTerm"
-                   class="form-control"
-                   placeholder="Search by name" />
+            <input type="text" name="search" value="@Model.SearchTerm" />
         </div>
-        
+
         <div>
-            <button type="submit" class="btn btn-primary">
-                Apply
-            </button>
-            <a asp-action="Index" class="btn btn-primary">
-                Reset
-            </a>
+            <button type="submit">Apply</button>
+            <a asp-action="Index">Reset</a>
         </div>
+
     </div>
 </form>
 
 <p><strong>Total Employees:</strong> @Model.TotalEmployees</p>
 
-<table class="table table-bordered table-striped">
+<table>
     <thead>
-        <tr>
-            <th>Name</th>
-            <th>Department</th>
-            <th>Email</th>
-            <th>Status</th>
-            <th>Action</th>
-        </tr>
+    <tr>
+        <th>Name</th>
+        <th>Department</th>
+        <th>Email</th>
+        <th>Status</th>
+        <th>Action</th>
+    </tr>
     </thead>
     <tbody>
-        @if (Model.Employees.Any())
-        {
-            foreach (var emp in Model.Employees)
+
+    @if (Model.Employees.Any())
+    {
+    foreach (var emp in Model.Employees)
+    {
+    <tr id="row-@emp.Id">
+        <td>@emp.Name</td>
+        <td>@emp.Department</td>
+        <td>@emp.Email</td>
+        <td>
+            @if (emp.IsActive)
             {
-                <tr>
-                    <td>@emp.Name</td>
-                    <td>@emp.Department</td>
-                    <td>@emp.Email</td>
-                    <td>
-                        @if (emp.IsActive)
-                        {
-                            <span style="color:green;font-weight:bold;">Active</span>
-                        }
-                        else
-                        {
-                            <span style="color:red;font-weight:bold;">Inactive</span>
-                        }
-                    </td>
-                    <td>
-                        <a asp-action="Details"
-                           asp-route-id="@emp.Id">
-                            View
-                        </a>
-                    </td>
-                </tr>
+            <span style="color:green;">Active</span>
             }
-        }
-        else
-        {
-            <tr>
-                <td colspan="5" style="text-align:center;">
-                    No employees found
-                </td>
-            </tr>
-        }
+            else
+            {
+            <span style="color:red;">Inactive</span>
+            }
+        </td>
+        <td>
+            <a asp-action="Details" asp-route-id="@emp.Id">View</a>
+            <button onclick="openEditModal(@emp.Id)">Edit</button>
+            <button onclick="deleteEmployee(@emp.Id)">Delete</button>
+        </td>
+    </tr>
+    }
+    }
+    else
+    {
+    <tr>
+        <td colspan="5" style="text-align:center;">No employees found</td>
+    </tr>
+    }
+
     </tbody>
 </table>
+
+
+
+
+<div id="editModal" style="display:none; border:1px solid #ccc; padding:20px; background:#f9f9f9;">
+    <h3>Edit Employee</h3>
+
+    <input type="hidden" id="editId" />
+
+    <input type="text" id="editName" placeholder="Name" required />
+    <input type="text" id="editDepartment" placeholder="Department" required />
+    <input type="email" id="editEmail" placeholder="Email" required />
+
+    <select id="editIsActive">
+        <option value="true">Active</option>
+        <option value="false">Inactive</option>
+    </select>
+
+    <br /><br />
+
+    <button onclick="updateEmployee()">Update</button>
+    <button onclick="closeEditModal()">Cancel</button>
+</div>
+
+<script>
+
+    fetch('/Employees/GetDepartments')
+        .then(res=>res.json())
+        .then(data=>{
+            const dropdown=document.getElementById('departmentDropdown');
+            data.forEach(d=>{
+                const o=document.createElement('option');
+                o.value=d;
+                o.text=d;
+                if(d==='@Model.SelectedDepartment'){o.selected=true;}
+                dropdown.appendChild(o);
+            });
+        });
+    function openCreateModal(){
+        document.getElementById("createModal").style.display="block";
+    }
+    function closeCreateModal(){
+        document.getElementById("createModal").style.display="none";
+    }
+    
+    
+    function createEmployee(){
+        const name=document.getElementById("createName").value.trim();
+        const dept=document.getElementById("createDepartment").value.trim();
+        const email=document.getElementById("createEmail").value.trim();
+
+        if(!name || !dept || !email){
+            alert("All fields required");
+            return;
+        }
+
+        fetch('/Employees/Create',{
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({
+                name:name,
+                department:dept,
+                email:email,
+                isActive:document.getElementById("createIsActive").value==="true"
+            })
+        }).then(r=>{
+            if(r.ok){location.reload();}
+            else{alert("Error");}
+        });
+    }
+
+    
+    
+    function deleteEmployee(id){
+        if(!confirm("Delete employee?")) return;
+
+        fetch(`/Employees/Delete?id=${id}`,{method:'DELETE'})
+            .then(r=>{
+                if(r.ok){
+                    document.getElementById(`row-${id}`).remove();
+                }else{alert("Delete failed");}
+            });
+    }
+
+    
+    
+    function openEditModal(id){
+        fetch(`/Employees/GetById?id=${id}`)
+            .then(r=>r.json())
+            .then(d=>{
+                document.getElementById("editId").value=d.id;
+                document.getElementById("editName").value=d.name;
+                document.getElementById("editDepartment").value=d.department;
+                document.getElementById("editEmail").value=d.email;
+                document.getElementById("editIsActive").value=d.isActive.toString();
+                document.getElementById("editModal").style.display="block";
+            });
+    }
+
+    
+    function closeEditModal(){
+        document.getElementById("editModal").style.display="none";
+    }
+
+    function updateEmployee(){
+        const name=document.getElementById("editName").value.trim();
+        const dept=document.getElementById("editDepartment").value.trim();
+        const email=document.getElementById("editEmail").value.trim();
+
+        if(!name || !dept || !email){
+            alert("All fields required");
+            return;
+        }
+
+        fetch('/Employees/Update',{
+            method:'PUT',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({
+                id:document.getElementById("editId").value,
+                name:name,
+                department:dept,
+                email:email,
+                isActive:document.getElementById("editIsActive").value==="true"
+            })
+        }).then(r=>{
+            if(r.ok){location.reload();}
+            else{alert("Update failed");}
+        });
+    }
+
+</script>

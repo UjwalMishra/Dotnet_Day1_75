@@ -5,17 +5,17 @@ namespace EmployeeManagement.Interfaces
 {
     public interface IEmployeeService
     {
-        List<EmployeeDto> GetEmployees(
+        Task<List<EmployeeDto>> GetEmployees(
             string department,
             string status,
             string search
         );
-
-        EmployeeDto? GetById(int id);
+        Task<EmployeeDto?> GetById(int id);
+        Task<List<DepartmentCountViewModel>> GetDepartmentCounts();
+        Task<List<string>> GetAllDepartments();
         
-        List<DepartmentCountViewModel> GetDepartmentCounts();
-        
-        List<string> GetAllDepartments();
-    
+        Task CreateEmployee(CreateEmployeeDto dto);
+        Task<bool> UpdateEmployee(UpdateEmployeeDto dto);
+        Task<bool> DeleteEmployee(int id);
     }
 }
